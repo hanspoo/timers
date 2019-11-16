@@ -1,32 +1,37 @@
 import React from "react";
+import { func, number, bool } from "prop-types";
 import moment from "moment";
+import { connect } from "react-redux";
 import { Jumbotron, Button, Glyphicon } from "react-bootstrap";
 
-export default class Timer extends React.Component {
-  state = { segundos: 0, nombre: "Intervalo 1" };
-
-  aumentar = () => {
-    this.setState(state => ({
-      segundos: state.segundos + 1
-    }));
+class Timer extends React.Component {
+  static propTypes = {
+    iniciar: func,
+    detener: func,
+    aumentar: func,
+    seconds: number,
+    corriendo: bool
   };
   comenzar = () => {
-    this.interval = setInterval(this.aumentar, 1000);
+    this.interval = setInterval(this.props.aumentar, 1000);
+    this.props.iniciar();
   };
   detener = () => {
     clearInterval(this.interval);
+    this.props.detener();
   };
   render() {
-    const { segundos, nombre } = this.state;
+    const { seconds, nombre, corriendo } = this.props;
     const segundosFormat = moment("2019-01-01")
       .startOf("day")
-      .seconds(segundos)
+      .seconds(seconds)
       .format("H:mm:ss");
 
     return (
       <Jumbotron>
         <h3>{nombre}</h3>
         <h1>{segundosFormat}</h1>
+        <p>{corriendo ? "En ejecución" : "Detenido"}</p>
         <p>
           <Button variant="primary">
             <Glyphicon glyph="refresh" />
@@ -42,3 +47,26 @@ export default class Timer extends React.Component {
     );
   }
 }
+
+const s2p = state => ({ corriendo: state.corriendo, seconds: state.segundos });
+const d2p = dispatch => ({
+  aumentar: () => dispatch({ type: "AUMENTAR" }),
+  detener: () => dispatch({ type: "DETENER" }),
+  iniciar: () => dispatch({ type: "INICIAR" })
+});
+
+export default connect(
+  s2p,
+  d2p
+)(Timer);
+/*
+
+
+
+
+
+
+
+
+
+*/
